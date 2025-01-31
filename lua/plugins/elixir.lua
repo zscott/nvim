@@ -22,7 +22,21 @@ return {
               },
             },
           },
-          on_attach = function(client, _bufnr)
+          on_attach = function(client, bufnr)
+            -- Add this debug hook
+            client.request = function(method, params, handler, ...)
+              if method == 'textDocument/formatting' then
+                print('Format params:', vim.inspect(params))
+              end
+              return client.request(method, params, handler, ...)
+            end
+            vim.api.nvim_create_autocmd('BufWritePre', {
+              buffer = bufnr,
+              callback = function()
+                print 'NextLS formatting attempt'
+              end,
+            })
+            print('NextLS capabilities', vim.inspect(client.server_capabilities))
             require('which-key').add {
               { '<leader>x', group = 'Eli[x]ir' },
             }
